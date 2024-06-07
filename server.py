@@ -20,7 +20,7 @@ DOWNLOAD_INTERVAL = 0
 
 
 #==========================================
-#== If Starte from Crontab - wrong path ===
+#== If Start from Crontab - wrong path ===
 UPLOAD_FOLDER = Path('./Upload').resolve()
 ROOT = Path("./static").resolve()
 #==========================================
