@@ -13,11 +13,10 @@ import urllib
 
 from time import time
 
-# import urllib
 # import socket
 # import shutil
 
-DOWNLOAD_INTERVAL = 3
+DOWNLOAD_INTERVAL = 0
 
 UPLOAD_FOLDER = Path('./Upload').resolve()
 directory = UPLOAD_FOLDER
@@ -79,9 +78,13 @@ def index():
 @app.route('/', methods=['POST', 'PUT'])
 def upload():
     f = request.files['file']
+    if f.filename == '':
+        return redirect(url_for('list_files'))
     save_path = UPLOAD_FOLDER / f.filename
     f.save(save_path)
-    return 'File uploaded successfully'
+    #return 'File uploaded successfully'
+    return redirect(url_for('list_files'))
+
 #=========================================================
 
 @app.route('/', methods=['GET'])
@@ -99,6 +102,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return 'file uploaded successfully'
+            
 #=========================================================
 
 @app.route('/list')
@@ -111,16 +115,18 @@ def list_files():
     file_size = []
     for file in files:
         file_path.append(file[0])
-        encoded_filename = urllib.parse.quote(file[0])
-        #file_links.append(url_for('download_file', filename=encoded_filename))
-        file_links.append(url_for('download', filename=encoded_filename))        
+        #encoded_filename = urllib.parse.quote(file[0])
+        #file_links.append(url_for('download', filename=encoded_filename))      
+        file_links.append(url_for('download', filename=os.path.basename(file[0])))    
         file_names.append(os.path.basename(file[0]))
         size = os.path.getsize(file[0])
         size = get_readable_file_size(size)
         file_size.append(size)
+        #print('file_name = ', os.path.basename(file[0]))
+        #print('file_links = ', url_for('download', filename=os.path.basename(file[0])))
     Avail_Files = len(file_names)
     Avail_Storage = get_readable_file_size(free)
-    data = zip(file_names, file_links, file_path, file_size)
+    data = zip(file_names, file_links, file_path, file_size)    
     return render_template('list.html', data=data, Avail_Files = Avail_Files, Avail_Storage = Avail_Storage)
 #=========================================================
 
@@ -131,6 +137,8 @@ def download(filename):
     logging.info(app.root_path)
     full_path = os.path.join(app.root_path, UPLOAD_FOLDER)
     logging.info(full_path)
+    #print('full_path = ', full_path)
+    #print('filename = ', filename)
     return send_from_directory(full_path, filename, as_attachment=True)
 #=========================================================
 
@@ -165,5 +173,6 @@ def send_assets(filename):
 #=========================================================
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, threaded=True, debug=True)    
+    app.run(host='0.0.0.0', port=5000, threaded=True, debug=True)   
+    #app.run(host='0.0.0.0', port=5000, threaded=True, debug=False)    
 #=========================================================
