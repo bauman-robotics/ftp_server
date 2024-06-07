@@ -1,6 +1,6 @@
 # make a simple flask upload server for testing purposes only
 
-from psutil import disk_usage 
+from psutil import disk_usage
 from flask import Flask, request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 import os
@@ -18,12 +18,21 @@ from time import time
 
 DOWNLOAD_INTERVAL = 0
 
+
+#==========================================
+#== If Starte from Crontab - wrong path ===
 UPLOAD_FOLDER = Path('./Upload').resolve()
+ROOT = Path("./static").resolve()
+#==========================================
+#== Use instead absolute path =============
+#UPLOAD_FOLDER = Path('/home/arkhan/Andrey/ftp_server/Upload').resolve()
+#ROOT = Path('/home/arkhan/Andrey/ftp_server/static').resolve()
+#==========================================
+
 directory = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'mp3', 'ogg', 'm4a', 'avi', 'mov', 'zip', 'rar', '7z', 'tar', 'gz', 'iso', 'apk', 'exe', 'msi', 'deb', 'pkg', 'dmg', 'bin', 'bat', 'sh', 'py', 'c', 'cpp',
                          'java', 'js', 'html', 'htm', 'css', 'scss', 'json', 'xml', 'csv', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'pdf', 'csv', 'db', 'dbf', 'log', 'mdb', 'sav', 'sql', 'tar', 'xml', 'apk', 'bat', 'bin', 'com', 'exe', 'jar', 'ai'])
-ROOT = Path("./static").resolve()
 
 error = "<html><head><title>{status}</title></head><body><center><h1>{status}</h1></center><hr><center>{server}</center></body></html>"
 
@@ -102,7 +111,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return 'file uploaded successfully'
-            
+
 #=========================================================
 
 @app.route('/list')
@@ -116,8 +125,8 @@ def list_files():
     for file in files:
         file_path.append(file[0])
         #encoded_filename = urllib.parse.quote(file[0])
-        #file_links.append(url_for('download', filename=encoded_filename))      
-        file_links.append(url_for('download', filename=os.path.basename(file[0])))    
+        #file_links.append(url_for('download', filename=encoded_filename))
+        file_links.append(url_for('download', filename=os.path.basename(file[0])))
         file_names.append(os.path.basename(file[0]))
         size = os.path.getsize(file[0])
         size = get_readable_file_size(size)
@@ -126,7 +135,7 @@ def list_files():
         #print('file_links = ', url_for('download', filename=os.path.basename(file[0])))
     Avail_Files = len(file_names)
     Avail_Storage = get_readable_file_size(free)
-    data = zip(file_names, file_links, file_path, file_size)    
+    data = zip(file_names, file_links, file_path, file_size)
     return render_template('list.html', data=data, Avail_Files = Avail_Files, Avail_Storage = Avail_Storage)
 #=========================================================
 
@@ -157,14 +166,14 @@ def delete_files():
         if os.path.isdir(filepath):
             shutil.rmtree(filepath)
         else:
-            os.remove(filepath)     
-        #==============================================         
+            os.remove(filepath)
+        #==============================================
     return redirect(url_for('list_files'))
 #=========================================================
 
 @app.route('/assets/<path:filename>')
 def send_assets(filename):
-    
+
     file=ROOT / 'assets' /filename
     if file.exists():
         return file.read_bytes()
@@ -173,6 +182,6 @@ def send_assets(filename):
 #=========================================================
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, threaded=True, debug=True)   
-    #app.run(host='0.0.0.0', port=5000, threaded=True, debug=False)    
+    app.run(host='0.0.0.0', port=5000, threaded=True, debug=True)
+    #app.run(host='0.0.0.0', port=5000, threaded=True, debug=False)
 #=========================================================
